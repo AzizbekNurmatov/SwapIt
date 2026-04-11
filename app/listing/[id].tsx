@@ -24,6 +24,39 @@ export default function ListingDetailsScreen({
     );
   }
 
+  // 2. State to track if the user saved this specific listing
+  const [isSaved, setIsSaved] = useState(false);
+
+  // 3. useEffect runs on mount to check if this item was previously saved
+  useEffect(() => {
+    const loadSavedStatus = async () => {
+      try {
+        const savedValue = await AsyncStorage.getItem(`saved_listing_${id}`);
+        if (savedValue === 'true') {
+          setIsSaved(true);
+        }
+      } catch (e) {
+        console.error("Failed to load data", e);
+      }
+    };
+    loadSavedStatus();
+  }, [id]);
+
+  // 4. Function to handle saving/removing the item from local storage
+  const handleSaveToggle = async () => {
+    try {
+      if (isSaved) {
+        await AsyncStorage.removeItem(`saved_listing_${id}`);
+        setIsSaved(false);
+      } else {
+        await AsyncStorage.setItem(`saved_listing_${id}`, 'true');
+        setIsSaved(true);
+      }
+    } catch (e) {
+      console.error("Failed to save data", e);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{item.title}</Text>
