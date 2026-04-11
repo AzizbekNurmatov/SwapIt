@@ -1,37 +1,73 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-
-// TypeScript Requirement
-interface MarketItem {
-  id: string;
-  title: string;
-}
-
-const dummyData: MarketItem[] = [
-  { id: '1', title: 'Calculus Textbook' },
-  { id: '2', title: 'Desk Lamp' },
-  { id: '3', title: 'Mini Fridge' },
-];
+import { useRouter } from "expo-router";
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useListings } from "../context/ListingsContext";
 
 export default function MarketFeedScreen() {
+  const { listings } = useListings();
+  const router = useRouter();
+
   return (
-    <View style={globalStyles.container}>
-      {/* FlatList is a great Core Component to list for your rubric */}
+    <View style={styles.container}>
       <FlatList
-        data={dummyData}
+        data={listings}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity style={globalStyles.card}>
-            <Text style={globalStyles.text}>{item.title}</Text>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => router.push(`/listing/${item.id}`)}
+          >
+            <Image
+              source={{ uri: item.image }}
+              style={styles.cardImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.text}>{item.title}</Text>
           </TouchableOpacity>
         )}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>
+            No listings yet. Go to User Profile and create one.
+          </Text>
+        }
       />
     </View>
   );
 }
 
-// Global Styles Requirement
-const globalStyles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
-  card: { padding: 20, marginVertical: 8, backgroundColor: 'white', borderRadius: 8 },
-  text: { fontSize: 18 },
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#f5f5f5",
+  },
+  card: {
+    padding: 15,
+    marginVertical: 8,
+    backgroundColor: "white",
+    borderRadius: 8,
+  },
+  cardImage: {
+    width: "100%",
+    height: 180,
+    borderRadius: 8,
+    marginBottom: 10,
+    resizeMode: "contain",
+    backgroundColor: "#fff",
+  },
+  text: {
+    fontSize: 18,
+  },
+  emptyText: {
+    textAlign: "center",
+    marginTop: 40,
+    fontSize: 16,
+    color: "#666",
+  },
 });
