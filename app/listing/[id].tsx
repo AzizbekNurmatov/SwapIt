@@ -1,16 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-// 1. Import AsyncStorage for local data persistence
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLocalSearchParams } from "expo-router";
+import { Image, StyleSheet, Text, View } from "react-native";
+import { useListings } from "../context/ListingsContext";
 
 interface ListingProps {
   defaultMessage?: string;
 }
 
-export default function ListingDetailsScreen({ defaultMessage = "Loading item details..." }: ListingProps) {
-  // This grabs the ID from the URL/Route
+export default function ListingDetailsScreen({
+  defaultMessage = "Loading item...",
+}: ListingProps) {
   const { id } = useLocalSearchParams();
+  const { listings } = useListings();
+
+  const item = listings.find((listing) => listing.id === id);
+
+  if (!item) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Listing Details</Text>
+        <Text style={styles.text}>Item not found</Text>
+        <Text style={styles.text}>{defaultMessage}</Text>
+      </View>
+    );
+  }
 
   // 2. State to track if the user saved this specific listing
   const [isSaved, setIsSaved] = useState(false);
@@ -47,34 +59,40 @@ export default function ListingDetailsScreen({ defaultMessage = "Loading item de
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Listing Details</Text>
-      <Text style={styles.text}>Viewing item ID: {id}</Text>
-      <Text style={styles.text}>{defaultMessage}</Text>
+      <Text style={styles.title}>{item.title}</Text>
 
-      {/* 5. Button to trigger the persistence logic */}
-      <TouchableOpacity 
-        style={[styles.saveButton, isSaved ? styles.buttonSaved : styles.buttonUnsaved]} 
-        onPress={handleSaveToggle}
-      >
-        <Text style={styles.buttonText}>
-          {isSaved ? "Remove from Saved" : "Save this Listing"}
-        </Text>
-      </TouchableOpacity>
+      <Image
+        source={{ uri: item.image }}
+        style={styles.image}
+        resizeMode="contain"
+      />
+
+      <Text style={styles.text}>{item.description}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
-  text: { fontSize: 16, color: '#333', marginBottom: 10 },
-  saveButton: {
-    marginTop: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#f5f5f5",
   },
-  buttonUnsaved: { backgroundColor: '#007AFF' },
-  buttonSaved: { backgroundColor: '#34C759' },
-  buttonText: { color: 'white', fontSize: 16, fontWeight: 'bold' }
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 15,
+  },
+  text: {
+    fontSize: 16,
+    color: "#333",
+    marginTop: 10,
+  },
+  image: {
+    width: "100%",
+    height: 260,
+    borderRadius: 8,
+    marginVertical: 10,
+    backgroundColor: "#fff",
+  },
 });
