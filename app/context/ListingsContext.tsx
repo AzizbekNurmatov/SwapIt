@@ -1,15 +1,19 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "../../lib/supabase";
 
 export interface Listing {
   id: string;
   title: string;
   description: string;
   image: string;
+  latitude: number;
+  longitude: number;
 }
 
 interface ListingsContextType {
   listings: Listing[];
   addListing: (listing: Listing) => void;
+  refreshListings: () => Promise<void>;
 }
 
 const ListingsContext = createContext<ListingsContextType | undefined>(
@@ -23,12 +27,29 @@ export const ListingsProvider = ({
 }) => {
   const [listings, setListings] = useState<Listing[]>([]);
 
+  const fetchListings = async () => {
+    const { data, error } = await supabase.from("listings").select("*");
+
+    if (error) {
+      console.error("Error fetching listings:", error);
+      return;
+    }
+
+    setListings((data as Listing[]) || []);
+  };
+
+  useEffect(() => {
+    fetchListings();
+  }, []);
+
   const addListing = (listing: Listing) => {
     setListings((prev) => [listing, ...prev]);
   };
 
   return (
-    <ListingsContext.Provider value={{ listings, addListing }}>
+    <ListingsContext.Provider
+      value={{ listings, addListing, refreshListings: fetchListings }}
+    >
       {children}
     </ListingsContext.Provider>
   );
