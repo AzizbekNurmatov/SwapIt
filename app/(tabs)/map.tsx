@@ -2,17 +2,9 @@ import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Callout, Marker } from "react-native-maps";
+import { useListings } from "../context/ListingsContext";
 
 type UserCoords = {
-  latitude: number;
-  longitude: number;
-};
-
-type MeetupSpot = {
-  id: string;
-  name: string;
-  description: string;
-  address: string;
   latitude: number;
   longitude: number;
 };
@@ -20,42 +12,21 @@ type MeetupSpot = {
 export default function MapScreen() {
   const router = useRouter();
   const mapRef = useRef<MapView | null>(null);
+  const { listings } = useListings();
 
   const [userCoords, setUserCoords] = useState<UserCoords | null>(null);
 
-  // Hardcoded markered meetup spots
-  const meetupSpots: MeetupSpot[] = [
-    {
-      id: "1",
-      name: "Pickup Spot #1",
-      description: "Pickup spot for TV",
-      address: "66 George St, Charleston, SC 29424",
-      latitude: 32.7831,
-      longitude: -79.9372,
-    },
-    {
-      id: "2",
-      name: "Pickup Spot #2",
-      description: "Pickup spot for lamp",
-      address: "7 Green Way, Charleston, SC 29424",
-      latitude: 32.7842,
-      longitude: -79.9362,
-    },
-    {
-      id: "3",
-      name: "Pickup Spot #3",
-      description: "Pickup spot for book",
-      address: "44 George St, Charleston, SC 29424",
-      latitude: 32.7824,
-      longitude: -79.9384,
-    },
-  ];
-
   const handleFitAllLocations = () => {
-    const coordinatesToFit = meetupSpots.map((spot) => ({
-      latitude: spot.latitude,
-      longitude: spot.longitude,
-    }));
+    const coordinatesToFit = listings
+      .filter(
+        (spot) =>
+          typeof spot.latitude === "number" &&
+          typeof spot.longitude === "number",
+      )
+      .map((spot) => ({
+        latitude: Number(spot.latitude),
+        longitude: Number(spot.longitude),
+      }));
 
     if (userCoords) {
       coordinatesToFit.push({
@@ -64,25 +35,33 @@ export default function MapScreen() {
       });
     }
 
-    mapRef.current?.fitToCoordinates(coordinatesToFit, {
-      edgePadding: {
-        top: 100,
-        right: 60,
-        bottom: 100,
-        left: 60,
-      },
-      animated: true,
-    });
+    if (coordinatesToFit.length > 0) {
+      mapRef.current?.fitToCoordinates(coordinatesToFit, {
+        edgePadding: {
+          top: 100,
+          right: 60,
+          bottom: 100,
+          left: 60,
+        },
+        animated: true,
+      });
+    }
   };
 
-  const handleMarkerPress = (spot: MeetupSpot) => {
+  const handleMarkerPress = (spot: {
+    id: string;
+    title: string;
+    description: string;
+    latitude: number;
+    longitude: number;
+  }) => {
     router.push({
       pathname: "/marker-details",
       params: {
         id: spot.id,
-        name: spot.name,
+        name: spot.title,
         description: spot.description,
-        address: spot.address,
+        address: "",
         latitude: String(spot.latitude),
         longitude: String(spot.longitude),
         userLatitude: userCoords ? String(userCoords.latitude) : "",
@@ -117,22 +96,21 @@ export default function MapScreen() {
           }
         }}
       >
-        {meetupSpots.map((spot) => (
+        {listings.map((spot) => (
           <Marker
             key={spot.id}
             coordinate={{
-              latitude: spot.latitude,
-              longitude: spot.longitude,
+              latitude: Number(spot.latitude),
+              longitude: Number(spot.longitude),
             }}
             pinColor="red"
           >
             <Callout tooltip={true} onPress={() => handleMarkerPress(spot)}>
               <View style={styles.calloutContainer}>
-                <Text style={styles.calloutTitle}>{spot.name}</Text>
+                <Text style={styles.calloutTitle}>{spot.title}</Text>
                 <Text style={styles.calloutDescription}>
                   {spot.description}
                 </Text>
-                <Text style={styles.calloutAddress}>{spot.address}</Text>
                 <Text style={styles.calloutTap}>Tap for details</Text>
               </View>
             </Callout>
@@ -188,11 +166,6 @@ const styles = StyleSheet.create({
   calloutDescription: {
     fontSize: 14,
     marginBottom: 6,
-  },
-  calloutAddress: {
-    fontSize: 13,
-    color: "#555",
-    marginBottom: 8,
   },
   calloutTap: {
     fontSize: 13,
