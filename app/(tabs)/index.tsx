@@ -1,14 +1,15 @@
 import { useRouter } from "expo-router";
 import {
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { useListings } from "../context/ListingsContext";
+import { useListings } from "../_context/ListingsContext";
 
+// Market feed: cards use listings loaded from Supabase via ListingsContext.
 export default function MarketFeedScreen() {
   const { listings } = useListings();
   const router = useRouter();

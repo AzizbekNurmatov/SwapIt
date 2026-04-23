@@ -24,6 +24,7 @@ function haversineDistanceMiles(
   return earthRadiusMiles * c;
 }
 
+// Pin detail view; the map passed these fields through the router params.
 export default function MarkerDetailsScreen() {
   const {
     name,

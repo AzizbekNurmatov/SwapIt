@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
+// Starter modal screen (not tied to Supabase login).
 export default function ModalScreen() {
   return (
     <ThemedView style={styles.container}>

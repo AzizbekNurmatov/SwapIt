@@ -2,13 +2,14 @@ import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Callout, Marker } from "react-native-maps";
-import { useListings } from "../context/ListingsContext";
+import { useListings } from "../_context/ListingsContext";
 
 type UserCoords = {
   latitude: number;
   longitude: number;
 };
 
+// Map tab: same Supabase-backed listings as the feed, shown as pins.
 export default function MapScreen() {
   const router = useRouter();
   const mapRef = useRef<MapView | null>(null);

@@ -16,7 +16,6 @@ import {
   TouchableWithoutFeedback,
   Keyboard
 } from "react-native";
-// import map components
 import MapView, { Marker } from "react-native-maps";
 import { supabase } from "../lib/supabase"; 
 
@@ -28,19 +27,19 @@ Notifications.setNotificationHandler({
   }),
 });
 
+// Post a new item: saves to Supabase and triggers a local notification.
 export default function CreateListingScreen() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageUri, setImageUri] = useState("");
-  // text description of the spot (optional now)
-  const [addressDesc, setAddressDesc] = useState(""); 
-  // precise coordinates from the map tap
+  const [addressDesc, setAddressDesc] = useState("");
   const [location, setLocation] = useState<{latitude: number, longitude: number} | null>(null);
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
 
+  // Ask for notification permission once so we can show "listing posted" alerts.
   useEffect(() => {
     const requestPermissions = async () => {
       const { status } = await Notifications.requestPermissionsAsync();
@@ -51,6 +50,7 @@ export default function CreateListingScreen() {
     requestPermissions();
   }, []);
 
+  // Opens the gallery so we can attach a photo to the listing.
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -63,8 +63,8 @@ export default function CreateListingScreen() {
     }
   };
 
+  // Validates fields, writes to Supabase, then goes home on success.
   const handleSubmit = async () => {
-    // updated validation to require the pin drop
     if (!title || !description || !imageUri || !location) {
       Alert.alert("Missing info", "Please add a title, description, photo, and drop a pin on the map!");
       return;
@@ -80,9 +80,9 @@ export default function CreateListingScreen() {
             title: title,
             description: description,
             image_uri: imageUri,
-            address: addressDesc, 
-            latitude: location.latitude,   // pushing exact lat
-            longitude: location.longitude, // pushing exact long
+            address: addressDesc,
+            latitude: location.latitude,
+            longitude: location.longitude,
           }
         ]);
 
@@ -96,13 +96,13 @@ export default function CreateListingScreen() {
         trigger: null,
       });
 
-      // reset form
+      // Clear the form after a good save.
       setTitle("");
       setDescription("");
       setImageUri("");
       setAddressDesc("");
       setLocation(null);
-      
+
       router.push("/");
 
     } catch (error: any) {
@@ -153,17 +153,14 @@ export default function CreateListingScreen() {
           <View style={styles.mapContainer}>
             <MapView
               style={styles.map}
-              // initialized over the local area
               initialRegion={{
-                latitude: 32.7765, 
+                latitude: 32.7765,
                 longitude: -79.9311,
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
               }}
-              // captures the coordinates where the user taps
               onPress={(e) => setLocation(e.nativeEvent.coordinate)}
             >
-              {/* renders the pin if location state exists */}
               {location && <Marker coordinate={location} />}
             </MapView>
           </View>

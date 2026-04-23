@@ -1,23 +1,19 @@
-import { useRouter } from "expo-router";
-import { Button, StyleSheet, Text, View } from "react-native";
+import { View, Text, Button, StyleSheet } from 'react-native';
+import { useAuth } from '../_context/AuthContext';
 
-interface ProfileProps {
-  username?: string;
-}
-
-export default function ProfileScreen({ username = "Student" }: ProfileProps) {
-  const router = useRouter();
+// Profile tab: shows the logged-in Supabase user and a sign-out button.
+export default function ProfileScreen() {
+  const { user, signOut } = useAuth();
 
   return (
     <View style={styles.container}>
-      <View style={styles.avatarPlaceholder} />
-      <Text style={styles.title}>{username}'s Profile</Text>
-      <Text style={styles.subtitle}>Rating: ⭐⭐⭐⭐⭐</Text>
+      <Text style={styles.header}>User Profile</Text>
 
-      <Button
-        title="Create Listing"
-        onPress={() => router.push("/create-listing")}
-      />
+      <Text style={styles.emailText}>Welcome, {user?.email}</Text>
+
+      <View style={styles.buttonContainer}>
+        <Button title="Sign Out" onPress={signOut} color="#ff3b30" />
+      </View>
     </View>
   );
 }
@@ -25,26 +21,22 @@ export default function ProfileScreen({ username = "Student" }: ProfileProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f5f5f5",
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
   },
-  avatarPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "#ccc",
-    marginBottom: 20,
-  },
-  title: {
+  header: {
     fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: "#666",
+    fontWeight: 'bold',
     marginBottom: 20,
   },
+  emailText: {
+    fontSize: 18,
+    marginBottom: 40,
+    color: '#333',
+  },
+  buttonContainer: {
+    width: '100%',
+    paddingHorizontal: 50,
+  }
 });

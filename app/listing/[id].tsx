@@ -12,10 +12,12 @@ interface Listing {
   longitude: number;
 }
 
+// Detail page: loads one listing from Supabase using the id in the URL.
 export default function ListingDetailsScreen() {
   const { id } = useLocalSearchParams();
   const [item, setItem] = useState<Listing | null>(null);
 
+  // Fetches that row whenever the id param is set or changes.
   useEffect(() => {
     const fetchListing = async () => {
       const { data, error } = await supabase

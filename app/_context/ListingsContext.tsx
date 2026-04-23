@@ -20,6 +20,7 @@ const ListingsContext = createContext<ListingsContextType | undefined>(
   undefined,
 );
 
+// Loads listings from Supabase once and shares them with child screens.
 export const ListingsProvider = ({
   children,
 }: {
@@ -27,6 +28,7 @@ export const ListingsProvider = ({
 }) => {
   const [listings, setListings] = useState<Listing[]>([]);
 
+  // Pulls all rows from the Supabase "listings" table into local state.
   const fetchListings = async () => {
     const { data, error } = await supabase.from("listings").select("*");
 
@@ -38,10 +40,12 @@ export const ListingsProvider = ({
     setListings((data as Listing[]) || []);
   };
 
+  // Load listings once when the provider mounts (app start).
   useEffect(() => {
     fetchListings();
   }, []);
 
+  // Pushes a new listing into state after the user creates one (keeps UI in sync).
   const addListing = (listing: Listing) => {
     setListings((prev) => [listing, ...prev]);
   };
@@ -55,6 +59,7 @@ export const ListingsProvider = ({
   );
 };
 
+// Hook for screens that need the shared listings array (must sit under ListingsProvider).
 export const useListings = () => {
   const context = useContext(ListingsContext);
 
