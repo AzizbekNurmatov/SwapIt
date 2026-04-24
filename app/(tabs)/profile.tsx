@@ -1,15 +1,23 @@
-import { View, Text, Button, StyleSheet } from 'react-native';
-import { useAuth } from '../_context/AuthContext';
+import { useRouter } from "expo-router";
+import { Button, StyleSheet, Text, View } from "react-native";
+import { useAuth } from "../_context/AuthContext";
 
-// Profile tab: shows the logged-in Supabase user and a sign-out button.
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>User Profile</Text>
 
       <Text style={styles.emailText}>Welcome, {user?.email}</Text>
+
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Create Listing"
+          onPress={() => router.push("/create-listing")}
+        />
+      </View>
 
       <View style={styles.buttonContainer}>
         <Button title="Sign Out" onPress={signOut} color="#ff3b30" />
@@ -21,22 +29,23 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   header: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
   },
   emailText: {
     fontSize: 18,
-    marginBottom: 40,
-    color: '#333',
+    marginBottom: 30,
+    color: "#fffbfb",
   },
   buttonContainer: {
-    width: '100%',
+    width: "100%",
     paddingHorizontal: 50,
-  }
+    marginBottom: 15,
+  },
 });

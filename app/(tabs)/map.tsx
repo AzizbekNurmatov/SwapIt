@@ -1,5 +1,6 @@
-import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import * as Location from "expo-location";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Callout, Marker } from "react-native-maps";
 import { useListings } from "../_context/ListingsContext";
@@ -9,20 +10,57 @@ type UserCoords = {
   longitude: number;
 };
 
-// Map tab: same Supabase-backed listings as the feed, shown as pins.
 export default function MapScreen() {
   const router = useRouter();
   const mapRef = useRef<MapView | null>(null);
-  const { listings } = useListings();
+  const { listings, refreshListings } = useListings();
 
   const [userCoords, setUserCoords] = useState<UserCoords | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshListings();
+    }, []),
+  );
+
+  useEffect(() => {
+    const requestLocationPermission = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        console.log("Location permission was denied");
+        return;
+      }
+
+      const currentLocation = await Location.getCurrentPositionAsync({});
+
+      setUserCoords({
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+      });
+
+      mapRef.current?.animateToRegion(
+        {
+          latitude: currentLocation.coords.latitude,
+          longitude: currentLocation.coords.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
+        1000,
+      );
+    };
+
+    requestLocationPermission();
+  }, []);
 
   const handleFitAllLocations = () => {
     const coordinatesToFit = listings
       .filter(
         (spot) =>
-          typeof spot.latitude === "number" &&
-          typeof spot.longitude === "number",
+          spot.latitude !== null &&
+          spot.longitude !== null &&
+          !isNaN(Number(spot.latitude)) &&
+          !isNaN(Number(spot.longitude)),
       )
       .map((spot) => ({
         latitude: Number(spot.latitude),
@@ -53,6 +91,7 @@ export default function MapScreen() {
     id: string;
     title: string;
     description: string;
+    address?: string;
     latitude: number;
     longitude: number;
   }) => {
@@ -62,7 +101,7 @@ export default function MapScreen() {
         id: spot.id,
         name: spot.title,
         description: spot.description,
-        address: "",
+        address: spot.address || "",
         latitude: String(spot.latitude),
         longitude: String(spot.longitude),
         userLatitude: userCoords ? String(userCoords.latitude) : "",
@@ -97,26 +136,34 @@ export default function MapScreen() {
           }
         }}
       >
-        {listings.map((spot) => (
-          <Marker
-            key={spot.id}
-            coordinate={{
-              latitude: Number(spot.latitude),
-              longitude: Number(spot.longitude),
-            }}
-            pinColor="red"
-          >
-            <Callout tooltip={true} onPress={() => handleMarkerPress(spot)}>
-              <View style={styles.calloutContainer}>
-                <Text style={styles.calloutTitle}>{spot.title}</Text>
-                <Text style={styles.calloutDescription}>
-                  {spot.description}
-                </Text>
-                <Text style={styles.calloutTap}>Tap for details</Text>
-              </View>
-            </Callout>
-          </Marker>
-        ))}
+        {listings
+          .filter(
+            (spot) =>
+              spot.latitude !== null &&
+              spot.longitude !== null &&
+              !isNaN(Number(spot.latitude)) &&
+              !isNaN(Number(spot.longitude)),
+          )
+          .map((spot) => (
+            <Marker
+              key={spot.id}
+              coordinate={{
+                latitude: Number(spot.latitude),
+                longitude: Number(spot.longitude),
+              }}
+              pinColor="red"
+            >
+              <Callout tooltip={true} onPress={() => handleMarkerPress(spot)}>
+                <View style={styles.calloutContainer}>
+                  <Text style={styles.calloutTitle}>{spot.title}</Text>
+                  <Text style={styles.calloutDescription}>
+                    {spot.description}
+                  </Text>
+                  <Text style={styles.calloutTap}>Tap for details</Text>
+                </View>
+              </Callout>
+            </Marker>
+          ))}
       </MapView>
 
       <TouchableOpacity
