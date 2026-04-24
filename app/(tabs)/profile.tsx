@@ -1,32 +1,26 @@
-import { View, Text, Button, StyleSheet } from 'react-native';
-import { useAuth } from '../_context/AuthContext';
-import { useRouter } from 'expo-router'; // <-- Don't forget this new import!
+import { useRouter } from "expo-router";
+import { Button, StyleSheet, Text, View } from "react-native";
+import { useAuth } from "../_context/AuthContext";
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
-  const router = useRouter(); // <-- Initialize the router
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>User Profile</Text>
-      
+
       <Text style={styles.emailText}>Welcome, {user?.email}</Text>
-      
+
       <View style={styles.buttonContainer}>
-        {/* The restored Create Listing button */}
-        <Button 
-          title="Create New Listing" 
-          onPress={() => router.push('/listing/create-listing')} 
-          color="#007AFF" 
+        <Button
+          title="Create Listing"
+          onPress={() => router.push("/create-listing")}
         />
-        
-        <View style={{ height: 20 }} /> {/* Spacer between the buttons */}
-        
-        <Button 
-          title="Sign Out" 
-          onPress={signOut} 
-          color="#ff3b30" 
-        />
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <Button title="Sign Out" onPress={signOut} color="#ff3b30" />
       </View>
     </View>
   );
@@ -35,22 +29,23 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   header: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
   },
   emailText: {
     fontSize: 18,
-    marginBottom: 40,
-    color: '#333',
+    marginBottom: 30,
+    color: "#fffbfb",
   },
   buttonContainer: {
-    width: '100%',
+    width: "100%",
     paddingHorizontal: 50,
-  }
+    marginBottom: 15,
+  },
 });
