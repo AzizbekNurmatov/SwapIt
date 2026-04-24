@@ -1,51 +1,90 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import { supabase } from '../../lib/supabase';
-import { useRouter } from 'expo-router';
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Button,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { supabase } from "../../lib/supabase";
 
-// Email/password screen: talks to Supabase auth then sends you to the main tabs.
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Signs in with Supabase; on success we go to the tabbed part of the app.
+  const validateInputs = () => {
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail || !password) {
+      Alert.alert("Missing Info", "Please enter both an email and password.");
+      return null;
+    }
+
+    if (!cleanEmail.includes("@")) {
+      Alert.alert("Invalid Email", "Please enter a valid email address.");
+      return null;
+    }
+
+    if (password.length < 6) {
+      Alert.alert("Weak Password", "Password must be at least 6 characters.");
+      return null;
+    }
+
+    return cleanEmail;
+  };
+
   const handleLogin = async () => {
+    const cleanEmail = validateInputs();
+    if (!cleanEmail) return;
+
     setLoading(true);
+
     const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
+      email: cleanEmail,
+      password,
     });
 
     if (error) {
       Alert.alert("Login Error", error.message);
     } else {
-      router.replace('/(tabs)');
+      router.replace("/(tabs)");
     }
+
     setLoading(false);
   };
 
-  // Creates a new Supabase account, then opens the main tabs if it worked.
   const handleSignup = async () => {
+    const cleanEmail = validateInputs();
+    if (!cleanEmail) return;
+
     setLoading(true);
+
     const { error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
+      email: cleanEmail,
+      password,
     });
 
     if (error) {
       Alert.alert("Signup Error", error.message);
     } else {
-      router.replace('/(tabs)');
+      Alert.alert(
+        "Account Created",
+        "Your account was created successfully. You can now log in.",
+      );
     }
+
     setLoading(false);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Welcome to SwapIt</Text>
-      
+
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -54,7 +93,7 @@ export default function LoginScreen() {
         autoCapitalize="none"
         keyboardType="email-address"
       />
-      
+
       <TextInput
         style={styles.input}
         placeholder="Password"
@@ -64,12 +103,20 @@ export default function LoginScreen() {
       />
 
       {loading ? (
-        <ActivityIndicator size="large" color="#007AFF" style={{ marginVertical: 20 }} />
+        <ActivityIndicator
+          size="large"
+          color="#007AFF"
+          style={{ marginVertical: 20 }}
+        />
       ) : (
         <View style={styles.buttonContainer}>
           <Button title="Login" onPress={handleLogin} />
           <View style={{ height: 10 }} />
-          <Button title="Create Account" onPress={handleSignup} color="#28a745" />
+          <Button
+            title="Create Account"
+            onPress={handleSignup}
+            color="#28a745"
+          />
         </View>
       )}
     </View>
@@ -79,19 +126,19 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   header: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 30,
-    textAlign: 'center',
+    textAlign: "center",
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     padding: 15,
     marginBottom: 15,
     borderRadius: 8,
@@ -99,5 +146,5 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 10,
-  }
+  },
 });

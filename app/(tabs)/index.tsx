@@ -1,15 +1,14 @@
 import { useRouter } from "expo-router";
 import {
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useListings } from "../_context/ListingsContext";
 
-// Market feed: cards use listings loaded from Supabase via ListingsContext.
 export default function MarketFeedScreen() {
   const { listings } = useListings();
   const router = useRouter();
@@ -24,11 +23,18 @@ export default function MarketFeedScreen() {
             style={styles.card}
             onPress={() => router.push(`/listing/${item.id}`)}
           >
-            <Image
-              source={{ uri: item.image }}
-              style={styles.cardImage}
-              resizeMode="contain"
-            />
+            {item.image_uri ? (
+              <Image
+                source={{ uri: item.image_uri }}
+                style={styles.cardImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={[styles.cardImage, styles.placeholder]}>
+                <Text style={styles.placeholderText}>No Image</Text>
+              </View>
+            )}
+
             <Text style={styles.text}>{item.title}</Text>
           </TouchableOpacity>
         )}
@@ -61,6 +67,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     resizeMode: "contain",
     backgroundColor: "#fff",
+  },
+  placeholder: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#e5e5e5",
+  },
+  placeholderText: {
+    color: "#666",
+    fontSize: 16,
   },
   text: {
     fontSize: 18,
